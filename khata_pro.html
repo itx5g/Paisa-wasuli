@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Khata Pro+</title>
+  <style>
+    body { font-family: Arial; padding: 15px; background: #eef2f3; }
+    input, button { padding: 10px; margin: 5px; width: 95%; }
+    .card { background: white; padding: 12px; margin: 10px 0; border-radius: 12px; }
+    .give { color: red; }
+    .got { color: green; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; }
+  </style>
+</head>
+<body>
+
+<h2>📒 Khata Pro+</h2>
+
+<div id="loginBox">
+  <input id="loginNumber" placeholder="Enter Your Mobile Number">
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="app" style="display:none;">
+
+<div class="topbar">
+  <h3>Welcome 👋</h3>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<input id="search" placeholder="🔍 Search Customer" onkeyup="showData()">
+
+<input id="name" placeholder="Customer Name">
+<input id="number" placeholder="Customer Mobile">
+<input id="amount" type="number" placeholder="Amount">
+
+<button onclick="addEntry('give')">➖ You Gave</button>
+<button onclick="addEntry('got')">➕ You Got</button>
+
+<h3>📊 Records:</h3>
+<div id="records"></div>
+
+</div>
+
+<script>
+let currentUser = localStorage.getItem("loggedUser");
+if(currentUser) showApp();
+
+function login(){
+  let num = document.getElementById("loginNumber").value;
+  if(!num) return alert("Enter number");
+  localStorage.setItem("loggedUser", num);
+  showApp();
+}
+
+function logout(){
+  localStorage.removeItem("loggedUser");
+  location.reload();
+}
+
+function showApp(){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("app").style.display="block";
+  loadData();
+}
+
+function getKey(){
+  return "khata_"+localStorage.getItem("loggedUser");
+}
+
+let data=[];
+
+function loadData(){
+  data = JSON.parse(localStorage.getItem(getKey())) || [];
+  showData();
+}
+
+function saveData(){
+  localStorage.setItem(getKey(), JSON.stringify(data));
+}
+
+function addEntry(type){
+  let name=document.getElementById("name").value;
+  let number=document.getElementById("number").value;
+  let amount=parseFloat(document.getElementById("amount").value);
+
+  if(!name||!number||!amount) return alert("Fill all fields");
+
+  data.push({
+    name, number, amount, type,
+    date:new Date().toLocaleString()
+  });
+
+  saveData();
+  showData();
+}
+
+function getBalance(num){
+  let bal=0;
+  data.forEach(i=>{
+    if(i.number===num){
+      if(i.type==="give") bal+=i.amount;
+      else bal-=i.amount;
+    }
+  });
+  return bal;
+}
+
+function showData(){
+  let search=document.getElementById("search").value.toLowerCase();
+  let records=document.getElementById("records");
+  records.innerHTML="";
+
+  let customers=[...new Set(data.map(i=>i.number))];
+
+  customers.forEach(num=>{
+    let list=data.filter(i=>i.number===num);
+    let name=list[0].name;
+
+    if(name.toLowerCase().includes(search)==false && num.includes(search)==false) return;
+
+    let balance=getBalance(num);
+
+    records.innerHTML+=`
+      <div class="card">
+        <b>${name}</b> (${num})<br>
+        Balance: ₹${balance}
+
+        <br><br>
+        <button onclick="sendWhatsApp('${num}', ${balance})">📩 Reminder</button>
+        <button onclick="deleteCustomer('${num}')">🗑 Delete</button>
+
+        <details>
+          <summary>View Details</summary>
+          ${list.map(i=>`
+            <div class="${i.type}">
+              ${i.type==="give"?"You Gave":"You Got"} ₹${i.amount}
+              <br><small>${i.date}</small>
+            </div>
+          `).join("")}
+        </details>
+      </div>
+    `;
+  });
+}
+
+function deleteCustomer(num){
+  if(confirm("Delete customer?")){
+    data=data.filter(i=>i.number!==num);
+    saveData();
+    showData();
+  }
+}
+
+function sendWhatsApp(num, balance){
+  let msg = encodeURIComponent(`Bhai ₹${balance} pending hai. Please jaldi clear karo 🙏`);
+  window.open(`https://wa.me/91${num}?text=${msg}`);
+}
+</script>
+
+</body>
+</html>i
