@@ -1,13 +1,232 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Redirect</title>
+  <title>Khata Cloud Pro</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: Arial; padding: 15px; background: #eef2f3; }
+    button, input { padding: 10px; margin: 5px; width: 95%; }
+    .card { background: white; padding: 12px; margin: 10px 0; border-radius: 12px; }
+    .give { color: red; }
+    .got { color: green; }
+  </style>
 </head>
 <body>
 
+<h2>📒 Khata Cloud Pro</h2>
+
+<button onclick="login()">🔐 Login with Gmail</button>
+<button onclick="logout()">🚪 Logout</button>
+
+<br><br>
+
+<input id="name" placeholder="Customer Name">
+<input id="number" placeholder="Customer Number">
+<input id="amount" type="number" placeholder="Amount">
+
+<button onclick="addEntry('give')">➖ You Gave</button>
+<button onclick="addEntry('got')">➕ You Got</button>
+
+<h3>📊 Records:</h3>
+<div id="records"></div>
+
 <script>
-window.location.href = "khata-pro.html";
+// 🔥 TERA FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyC0dcSXJj_QD1FwMlnf8-nLHrRLO39PrhA",
+  authDomain: "khataapp-83680.firebaseapp.com",
+  projectId: "khataapp-83680",
+  storageBucket: "khataapp-83680.firebasestorage.app",
+  messagingSenderId: "318535490662",
+  appId: "1:318535490662:web:a4a538ccbc3048ca5421a7"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// 🔐 LOGIN
+function login(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+}
+
+// 🚪 LOGOUT
+function logout(){
+  auth.signOut();
+}
+
+// 👤 USER STATE
+auth.onAuthStateChanged(user=>{
+  if(user){
+    loadData(user.uid);
+  }
+});
+
+// ➕ ADD ENTRY
+function addEntry(type){
+  let user = auth.currentUser;
+  if(!user) return alert("Login first");
+
+  let name=document.getElementById("name").value;
+  let number=document.getElementById("number").value;
+  let amount=parseFloat(document.getElementById("amount").value);
+
+  if(!name||!number||!amount) return alert("Fill all fields");
+
+  db.collection("khata").add({
+    uid:user.uid,
+    name,
+    number,
+    amount,
+    type,
+    date:new Date()
+  });
+}
+
+// 📊 LOAD DATA
+function loadData(uid){
+  db.collection("khata")
+  .where("uid","==",uid)
+  .onSnapshot(snapshot=>{
+    let html="";
+    snapshot.forEach(doc=>{
+      let d=doc.data();
+      html+=`
+        <div class="card">
+          <b>${d.name}</b> (${d.number})<br>
+          <span class="${d.type}">
+            ${d.type==="give"?"You Gave":"You Got"} ₹${d.amount}
+          </span>
+        </div>
+      `;
+    });
+    document.getElementById("records").innerHTML=html;
+  });
+}
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html>
+<head>
+  <title>Khata Cloud Pro</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: Arial; padding: 15px; background: #eef2f3; }
+    button, input { padding: 10px; margin: 5px; width: 95%; }
+    .card { background: white; padding: 12px; margin: 10px 0; border-radius: 12px; }
+    .give { color: red; }
+    .got { color: green; }
+  </style>
+</head>
+<body>
+
+<h2>📒 Khata Cloud Pro</h2>
+
+<button onclick="login()">🔐 Login with Gmail</button>
+<button onclick="logout()">🚪 Logout</button>
+
+<br><br>
+
+<input id="name" placeholder="Customer Name">
+<input id="number" placeholder="Customer Number">
+<input id="amount" type="number" placeholder="Amount">
+
+<button onclick="addEntry('give')">➖ You Gave</button>
+<button onclick="addEntry('got')">➕ You Got</button>
+
+<h3>📊 Records:</h3>
+<div id="records"></div>
+
+<script>
+// 🔥 TERA FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyC0dcSXJj_QD1FwMlnf8-nLHrRLO39PrhA",
+  authDomain: "khataapp-83680.firebaseapp.com",
+  projectId: "khataapp-83680",
+  storageBucket: "khataapp-83680.firebasestorage.app",
+  messagingSenderId: "318535490662",
+  appId: "1:318535490662:web:a4a538ccbc3048ca5421a7"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// 🔐 LOGIN
+function login(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+}
+
+// 🚪 LOGOUT
+function logout(){
+  auth.signOut();
+}
+
+// 👤 USER STATE
+auth.onAuthStateChanged(user=>{
+  if(user){
+    loadData(user.uid);
+  }
+});
+
+// ➕ ADD ENTRY
+function addEntry(type){
+  let user = auth.currentUser;
+  if(!user) return alert("Login first");
+
+  let name=document.getElementById("name").value;
+  let number=document.getElementById("number").value;
+  let amount=parseFloat(document.getElementById("amount").value);
+
+  if(!name||!number||!amount) return alert("Fill all fields");
+
+  db.collection("khata").add({
+    uid:user.uid,
+    name,
+    number,
+    amount,
+    type,
+    date:new Date()
+  });
+}
+
+// 📊 LOAD DATA
+function loadData(uid){
+  db.collection("khata")
+  .where("uid","==",uid)
+  .onSnapshot(snapshot=>{
+    let html="";
+    snapshot.forEach(doc=>{
+      let d=doc.data();
+      html+=`
+        <div class="card">
+          <b>${d.name}</b> (${d.number})<br>
+          <span class="${d.type}">
+            ${d.type==="give"?"You Gave":"You Got"} ₹${d.amount}
+          </span>
+        </div>
+      `;
+    });
+    document.getElementById("records").innerHTML=html;
+  });
+}
 </script>
 
 </body>
